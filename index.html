@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VestaLock — Vesting on BOT Chain</title>
+<style>
+:root{--bg:#0d0a12;--fg:#f1ecf7;--mut:#a89cc0;--line:#251d33;--card:#151021;--acc:#a78bfa;--acc2:#ddd0fd;--onacc:#1c1038;--danger:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:'Inter',system-ui,sans-serif;line-height:1.55;min-height:100vh}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'Courier New',monospace}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+nav{border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50;background:rgba(13,10,18,.92);backdrop-filter:blur(8px)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px}
+.logo i{width:26px;height:26px;border-radius:6px;background:var(--acc);color:var(--onacc);display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-style:normal}
+.nav-links{display:flex;align-items:center;gap:18px;font-size:13.5px;color:var(--mut)}
+.nav-links a:hover{color:var(--acc2)}
+.btn{font-weight:600;font-size:13.5px;padding:10px 18px;border-radius:8px;border:none;cursor:pointer;min-height:40px}
+.btn-a{background:var(--acc);color:var(--onacc)}
+.btn-a:hover{background:var(--acc2)}
+.btn-g{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn-g:hover{border-color:var(--acc)}
+.btn-d{background:transparent;color:var(--danger);border:1px solid rgba(239,68,68,.5)}
+.btn-sm{padding:7px 13px;font-size:12.5px;min-height:34px}
+select#netSel{background:var(--card);border:1px solid var(--line);border-radius:8px;font-size:12px;padding:9px;color:var(--fg)}
+.hero{padding:56px 0 30px}
+.hero h1{font-size:clamp(30px,5vw,52px);font-weight:800;letter-spacing:-.02em}
+.hero h1 span{color:var(--acc)}
+.hero p{color:var(--mut);max-width:640px;margin-top:12px;font-size:16px}
+.ticker{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:8px 0 26px}
+.ticker .cell{padding:16px 24px;display:flex;justify-content:space-between;gap:12px}
+.ticker .cell + .cell{border-left:1px solid var(--line)}
+.ticker .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.ticker .v{font-size:15px;font-weight:700;color:var(--acc2)}
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:start;padding-bottom:48px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}.ticker{grid-template-columns:1fr}.ticker .cell + .cell{border-left:none;border-top:1px solid var(--line)}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:18px;overflow:hidden}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.row{display:grid;grid-template-columns:130px 1fr auto;gap:12px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row label{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.row input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--fg);font-size:14px;padding:10px 12px;min-height:42px;font-family:'Inter',sans-serif}
+.row input.mono{font-family:'Courier New',monospace;font-size:12.5px}
+.kv{display:flex;justify-content:space-between;padding:11px 18px;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--mut);gap:10px}
+.kv:last-child{border-bottom:none}
+.kv b{color:var(--fg);font-weight:600;text-align:right}
+.hint{padding:10px 18px 16px;font-size:12.5px;color:var(--mut)}
+.msg{display:none;padding:8px 18px 14px;font-size:12.5px;color:var(--acc2)}
+.sch{padding:16px 18px;border-bottom:1px solid var(--line)}
+.sch:last-child{border-bottom:none}
+.sch-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.sch-top b{font-size:15.5px}
+.tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:5px;border:1px solid;white-space:nowrap}
+.tag.live{color:var(--acc2);border-color:rgba(167,139,250,.5)}
+.tag.done{color:var(--mut);border-color:var(--line)}
+.tag.cancel{color:var(--danger);border-color:rgba(239,68,68,.5)}
+.sch-meta{font-size:12.5px;color:var(--mut);display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.sch-meta .mono{color:var(--fg);font-size:12px}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:4px 0 10px}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.sch-actions{display:flex;gap:8px;flex-wrap:wrap}
+footer{padding:36px 0;border-top:1px solid var(--line);color:var(--mut);font-size:13px}
+footer a{color:var(--acc2)}
+.proof{max-width:440px;margin-top:18px;padding:16px 18px;background:var(--card);border:1px solid var(--line);border-radius:8px}
+.proof-title{font-family:ui-monospace,'Courier New',monospace;font-size:11px;font-weight:600;color:var(--acc);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+.proof-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-family:ui-monospace,'Courier New',monospace;font-size:12px;color:var(--mut)}
+.proof-grid .val{color:var(--acc);overflow-wrap:anywhere}
+.proof-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.proof-link{font-family:ui-monospace,'Courier New',monospace;font-size:11px;color:var(--acc);border-bottom:1px solid var(--acc);text-decoration:none}
+</style>
+</head>
+<body>
+<nav><div class="wrap nav-in">
+<div class="logo"><i>◐</i>VestaLock</div>
+<div class="nav-links">
+<select id="netSel"><option value="677" selected>Mainnet 677</option><option value="968">Testnet 968</option></select>
+<button class="btn btn-a" id="connectBtn">Connect wallet</button>
+</div>
+</div></nav>
+
+<div class="wrap">
+<div class="hero">
+<h1>Tokens, <span>vested.</span></h1>
+<p>Lock any token into linear vesting with a cliff. Beneficiaries release tranches as they vest; funders can revoke, splitting vested-to-beneficiary and the rest home.</p>
+</div>
+
+<div class="ticker">
+<div class="cell"><span class="k">Schedules</span><span class="v" id="tSch">—</span></div>
+<div class="cell"><span class="k">Active</span><span class="v" id="tActive">—</span></div>
+<div class="cell"><span class="k">Your BOT</span><span class="v" id="tBal">—</span></div>
+</div>
+
+<div class="grid">
+<div>
+<div class="panel">
+<div class="panel-head">Schedules</div>
+<div id="schList"><div class="hint">Loading schedules…</div></div>
+</div>
+</div>
+
+<div>
+<div class="panel">
+<div class="panel-head">Lock tokens</div>
+<div class="row"><label>Token</label><input id="lToken" class="mono" placeholder="0x…"></div>
+<div class="row"><label>Beneficiary</label><input id="lBen" class="mono" placeholder="0x…"></div>
+<div class="row"><label>Amount</label><input id="lAmt" placeholder="token amount"></div>
+<div class="row"><label>Cliff (s)</label><input id="lCliff" type="number" placeholder="86400"></div>
+<div class="row" style="border-bottom:none"><label>Duration (s)</label><input id="lDur" type="number" placeholder="31536000"></div>
+<div class="row" style="border-bottom:none;grid-template-columns:1fr auto"><span class="hint" style="padding:0">Approve first, then lock.</span><span><button class="btn btn-g btn-sm" id="approveBtn">Approve</button> <button class="btn btn-a btn-sm" id="lockBtn">Lock →</button></span></div>
+<div class="msg" id="lMsg"></div>
+</div>
+
+<div class="panel">
+<div class="panel-head">How it works</div>
+<div class="kv"><span>Curve</span><b>linear after cliff</b></div>
+<div class="kv"><span>Release</span><b>anyone, pays beneficiary</b></div>
+<div class="kv"><span>Revoke</span><b>funder only, splits fairly</b></div>
+<div class="kv"><span>End</span><b>100% vested, release all</b></div>
+<div class="hint">Perfect for team unlocks, investor cliffs, and BotLaunch graduate distributions.</div>
+</div>
+</div>
+</div>
+
+<footer>
+<p>VestaLock — token vesting on BOT Chain. Locked, vested, released — all on-chain.</p>
+<div class="proof">
+<div class="proof-title">Proof on BOT Mainnet</div>
+<div class="proof-grid">
+<span>Chain ID</span><span class="val">677</span>
+<span>Contract</span><span class="val">0xdBc11c0144F4B7018575d294e8b2b3bC0cB4a336</span>
+</div>
+<div class="proof-links">
+<a href="https://botchain.ai" target="_blank" rel="noopener" class="proof-link">BOT Chain Website &#8599;</a>
+<a href="https://scan.botchain.ai/" target="_blank" rel="noopener" class="proof-link">BOTScan Explorer &#8599;</a>
+</div>
+</div>
+</footer>
+</div>
+
+<script type="importmap">
+{"imports":{"ethers":"https://esm.sh/ethers@6.13.2","@reown/appkit":"https://esm.sh/@reown/appkit@1.8.21","@reown/appkit-adapter-ethers":"https://esm.sh/@reown/appkit-adapter-ethers@1.8.21"}}
+</script>
+<script type="module">
+import { ethers } from 'ethers';
+import { createAppKit } from '@reown/appkit';
+import { EthersAdapter } from '@reown/appkit-adapter-ethers';
+
+const PROJECT_ID = 'f018499b1e4a94d961ab67aeeeff3254';
+const CONTRACTS = {
+  677: { vl: '0xdBc11c0144F4B7018575d294e8b2b3bC0cB4a336' },
+  968: { vl: '0x25dAeB763d2f078548976B0185ec248A3950Acd0' },
+};
+const VL_ABI = [
+  'function totalSchedules() view returns (uint256)',
+  'function getSchedule(uint256) view returns (address,address,address,uint256,uint256,uint64,uint64,uint64,bool)',
+  'function vested(uint256) view returns (uint256)',
+  'function lock(address,address,uint256,uint64,uint64,uint64) returns (uint256)',
+  'function release(uint256)',
+  'function revoke(uint256)',
+];
+const ERC_ABI = ['function approve(address,uint256) returns (bool)'];
+const $ = (id) => document.getElementById(id);
+let currentChainId = 677, account = null;
+
+const appkit = createAppKit({
+  adapters: [new EthersAdapter()],
+  networks: [{ id: 677, name: 'BOT Mainnet', nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.botchain.ai'] } } }, { id: 968, name: 'BOT Testnet', nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.bohr.life'] } } }],
+  projectId: PROJECT_ID,
+  features: { analytics: false },
+});
+async function getSigner() {
+  if (typeof appkit !== 'undefined' && appkit && typeof appkit.getWalletProvider === 'function') {
+    const wp = appkit.getWalletProvider('eip155') || appkit.getWalletProvider();
+    if (wp) return await new ethers.BrowserProvider(wp).getSigner();
+  }
+  throw new Error('Connect a wallet first');
+}
+function short(a) { return !a ? '—' : a.slice(0, 6) + '…' + a.slice(-4); }
+function msg(id, t, ok) {
+  const el = $(id); el.style.display = 'block';
+  el.style.color = ok === false ? 'var(--danger)' : 'var(--acc2)';
+  el.textContent = t;
+}
+async function provider() {
+  return new ethers.JsonRpcProvider(currentChainId === 968 ? 'https://rpc.bohr.life' : 'https://rpc.botchain.ai');
+}
+async function vlRead() {
+  const c = CONTRACTS[currentChainId];
+  if (!c) return null;
+  return new ethers.Contract(c.vl, VL_ABI, await provider());
+}
+function fmt(v) { try { return ethers.formatEther(v); } catch (e) { return String(v); } }
+async function refresh() {
+  const t = await vlRead();
+  if (!t) { $('schList').innerHTML = '<div class="hint">Switch chain above.</div>'; return; }
+  const n = Number(await t.totalSchedules());
+  $('tSch').textContent = n;
+  let active = 0;
+  const list = [];
+  for (let i = 0; i < n; i++) {
+    const s = await t.getSchedule(i);
+    const v = await t.vested(i);
+    list.push({ id: i, token: s[0], funder: s[1], ben: s[2], total: s[3], released: s[4], start: Number(s[5]), cliff: Number(s[6]), dur: Number(s[7]), revoked: s[8], vested: v });
+    if (!s[8] && s[4] < s[3]) active++;
+  }
+  $('tActive').textContent = active;
+  if (account) {
+    try { $('tBal').textContent = Number(ethers.formatEther(await (await provider()).getBalance(account))).toFixed(4) + ' BOT'; } catch (e) {}
+  }
+  if (!list.length) { $('schList').innerHTML = '<div class="hint">No schedules yet — lock the first one →</div>'; return; }
+  $('schList').innerHTML = list.slice().reverse().map((s) => {
+    const pct = s.total > 0n ? Number((s.released * 10000n) / s.total) / 100 : 0;
+    const done = s.revoked || s.released >= s.total;
+    const isFunder = account && s.funder.toLowerCase() === account.toLowerCase();
+    return '<div class="sch"><div class="sch-top"><b>#' + s.id + ' → ' + short(s.ben) + '</b>'
+      + '<span class="tag ' + (s.revoked ? 'cancel' : done ? 'done' : 'live') + '">' + (s.revoked ? 'Revoked' : done ? 'Complete' : 'Vesting') + '</span></div>'
+      + '<div class="sch-meta"><span>Total <span class="mono">' + fmt(s.total) + '</span></span><span>Vested <span class="mono">' + fmt(s.vested) + '</span></span><span>Token <span class="mono">' + short(s.token) + '</span></span></div>'
+      + '<div class="bar"><i style="width:' + pct + '%"></i></div>'
+      + '<div class="sch-actions">'
+      + (!done ? '<button class="btn btn-a btn-sm" data-act="release" data-id="' + s.id + '">Release</button>' : '')
+      + (!s.revoked && isFunder ? '<button class="btn btn-d btn-sm" data-act="revoke" data-id="' + s.id + '">Revoke</button>' : '')
+      + '</div></div>';
+  }).join('');
+}
+async function write(fn, args, okMsg) {
+  try {
+    const s = await getSigner();
+    const t = new ethers.Contract(CONTRACTS[currentChainId].vl, VL_ABI, s);
+    const tx = await t[fn](...args);
+    msg('lMsg', 'Sent: ' + tx.hash.slice(0, 18) + '… waiting…');
+    await tx.wait();
+    msg('lMsg', okMsg || 'Confirmed ✓');
+    await refresh();
+  } catch (e) {
+    msg('lMsg', 'Failed: ' + (e.shortMessage || e.reason || e.message || e).toString().slice(0, 160), false);
+  }
+}
+$('schList').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const id = Number(b.dataset.id);
+  if (b.dataset.act === 'release') await write('release', [id], 'Released ✓');
+  else if (b.dataset.act === 'revoke') {
+    if (!confirm('Revoke schedule #' + id + '? Vested pays out, rest returns to you.')) return;
+    await write('revoke', [id], 'Revoked — split settled.');
+  }
+});
+$('approveBtn').addEventListener('click', async () => {
+  const tok = $('lToken').value.trim(), amt = $('lAmt').value.trim();
+  if (!/^0x[0-9a-fA-F]{40}$/.test(tok) || !amt || Number(amt) <= 0) { msg('lMsg', 'Valid token + positive amount required.', false); return; }
+  try {
+    const s = await getSigner();
+    const erc = new ethers.Contract(tok, ERC_ABI, s);
+    const tx = await erc.approve(CONTRACTS[currentChainId].vl, ethers.parseEther(amt));
+    msg('lMsg', 'Sent: ' + tx.hash.slice(0, 18) + '…');
+    await tx.wait();
+    msg('lMsg', 'Approved ✓ now Lock.');
+  } catch (e) { msg('lMsg', 'Failed: ' + (e.shortMessage || e.message || e).toString().slice(0, 140), false); }
+});
+$('lockBtn').addEventListener('click', async () => {
+  const tok = $('lToken').value.trim(), ben = $('lBen').value.trim(), amt = $('lAmt').value.trim();
+  const cliff = Number($('lCliff').value.trim() || '0'), dur = Number($('lDur').value.trim() || '0');
+  if (!/^0x[0-9a-fA-F]{40}$/.test(tok) || !/^0x[0-9a-fA-F]{40}$/.test(ben) || !amt || Number(amt) <= 0 || !(dur > 0) || cliff > dur) {
+    msg('lMsg', 'Valid token/beneficiary/amount + sane cliff ≤ duration required.', false); return;
+  }
+  await write('lock', [tok, ben, ethers.parseEther(amt), 0, cliff, dur], 'Locked ✓ schedule created.');
+});
+if ($('connectBtn')) {
+  appkit.subscribeAccount((a) => {
+    account = a.address || null;
+    $('connectBtn').textContent = account ? account.slice(0, 6) + '…' + account.slice(-4) : 'Connect wallet';
+    refresh();
+  });
+  appkit.subscribeNetwork((n) => {
+    if (n && n.chainId) { currentChainId = Number(n.chainId); const s = $('netSel'); if (s) s.value = String(currentChainId); }
+    refresh();
+  });
+  $('connectBtn').addEventListener('click', () => appkit.open());
+  if ($('netSel')) $('netSel').addEventListener('change', (e) => {
+    const id = Number(e.target.value);
+    try { appkit.switchNetwork({ id }); } catch (err) {}
+    currentChainId = id;
+    refresh();
+  });
+}
+refresh();
+setInterval(() => { if (!document.hidden) refresh(); }, 25000);
+</script>
+</body>
+</html>
